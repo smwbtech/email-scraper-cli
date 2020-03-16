@@ -1,7 +1,7 @@
 {
   "name": "email-scraper-cli",
   "description": "Command line interface to extract email from site or list of websites",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Roman Privalov",
   "bin": {
     "email-scraper": "./bin/run"

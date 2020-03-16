@@ -20,7 +20,7 @@ $ npm install -g email-scraper-cli
 $ email-scraper COMMAND
 running command...
 $ email-scraper (-v|--version|version)
-email-scraper-cli/0.1.0 win32-x64 node-v12.14.1
+email-scraper-cli/0.1.1 win32-x64 node-v12.14.1
 $ email-scraper --help [COMMAND]
 USAGE
   $ email-scraper COMMAND
