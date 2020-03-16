@@ -45,21 +45,24 @@ export default class ScraperController {
     }
   }
 
-  private async collectMeta(options: CollectDataOptions) {
+  private async collectMeta(options: CollectDataOptions): Promise<MetaData> {
     const { titleSelector, descriptionSelectors, keywordsSelector } = options;
+    let title;
+    let keywords;
+    let description;
     if (this.page) {
       try {
-        const { title, keywords, description } = await this.page.evaluate(
+        ({ title, keywords, description } = await this.page.evaluate(
           options => {
             const titleElement = document.querySelector(
-              titleSelector
+              options.titleSelector
             ) as HTMLTitleElement | null;
             const keywordsElement = document.querySelector(
-              keywordsSelector
+              options.keywordsSelector
             ) as HTMLMetaElement | null;
             let descriptionElement: HTMLMetaElement | null = null;
             // Iterate over descriptions selectors and get HTMLMetaElement element
-            for (const descriptionSelector of descriptionSelectors) {
+            for (const descriptionSelector of options.descriptionSelectors) {
               descriptionElement = document.querySelector(descriptionSelector);
               if (descriptionElement) break;
             }
@@ -70,12 +73,13 @@ export default class ScraperController {
             };
           },
           { titleSelector, descriptionSelectors, keywordsSelector }
-        );
+        ));
         return { title, keywords, description };
       } catch (e) {
         console.log(e);
       }
     }
+    return { title, keywords, description };
   }
 
   private async collectContacts() {
@@ -106,12 +110,27 @@ export default class ScraperController {
     }
   }
 
-  async collectData(collectOnlyEmail: boolean) {
+  async collectData(
+    collectAllData: boolean,
+    options: CollectDataOptions
+  ): Promise<CollectedDataResult> {
+    let emails;
+    let contactsSection;
+    let title;
+    let keywords;
+    let description;
     if (this.page) {
       try {
+        emails = await this.collectEmail();
+        if (collectAllData) {
+          contactsSection = await this.collectContacts();
+          ({ title, keywords, description } = await this.collectMeta(options));
+        }
+        return { emails, contactsSection, title, keywords, description };
       } catch (e) {
         console.log(e);
       }
     }
+    return { emails, contactsSection, title, keywords, description };
   }
 }
