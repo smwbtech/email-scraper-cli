@@ -1,5 +1,13 @@
 import { Command, flags } from '@oclif/command';
+import ora from 'ora';
+import { promises as fsPromises } from 'fs';
+// https://github.com/oclif/oclif/issues/335
+// @ts-ignore
 import readXlsxFile from 'read-excel-file/node';
+// @ts-ignore
+import json2xls from 'json2xls';
+import splitBySite from './lib/split-by-email';
+import Scraper from './core/scraper';
 
 class EmailScraperCli extends Command {
 	static description = 'describe the command here';
@@ -17,17 +25,35 @@ class EmailScraperCli extends Command {
 	static args = [{ name: 'file' }];
 
 	async run() {
-		const { args, flags } = this.parse(EmailScraperCli);
+		const { args } = this.parse(EmailScraperCli);
 
-		const name = flags.name || 'world';
-		this.log('To start programm you need input path for file');
+		const spinner = ora(
+			`Reading and convering data from file: "${args.file}"'`
+		).start();
 		if (args.file) {
 			try {
-				const raws = await readXlsxFile(args.file);
-				console.log(raws);
+				let pathArr = args.file.split('/');
+				pathArr.splice(-1);
+				const path = pathArr.join('/');
+				const scraper = new Scraper();
+				const raws = (await readXlsxFile(args.file)) as Array<[]>;
+				const sites = raws.flat();
+				const data = await scraper.crawl(sites, spinner);
+				const splitedData = splitBySite(data);
+				const xls = json2xls(splitedData);
+				await fsPromises.writeFile(
+					`${path}/parser-data-${Date.now()}.xlsx`,
+					xls,
+					'binary'
+				);
+				spinner.succeed('Data is collected');
 			} catch (e) {
 				console.log(e);
+			} finally {
+				this.exit();
 			}
+		} else {
+			spinner.fail('Wrong path to the file');
 		}
 	}
 }
