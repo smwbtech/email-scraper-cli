@@ -12,6 +12,8 @@
     "@oclif/config": "^1.14.0",
     "@oclif/plugin-help": "^2.2.3",
     "@types/puppeteer": "^2.0.1",
+    "json2xls": "^0.1.2",
+    "ora": "^4.0.3",
     "puppeteer": "^2.1.1",
     "read-excel-file": "^4.0.6",
     "tslib": "^1.11.1",
