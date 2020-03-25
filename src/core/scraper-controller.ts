@@ -17,20 +17,24 @@ export default class ScraperController {
 			// If this is first site in list launch puppeteer
 			if (!this.browser) {
 				this.browser = await puppeteer.launch();
-				this.page = await this.browser.newPage();
-				this.page.setViewport({
-					width: 1920,
-					height: 979,
-					deviceScaleFactor: 1
-				});
-				await this.page.setUserAgent(
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
-				);
 			}
 			// If site has no protocol
 			if (!protocolPattern.test(site)) site = `http://${site}`;
+			this.page = await this.browser.newPage();
+			this.page.setViewport({
+				width: 1920,
+				height: 979,
+				deviceScaleFactor: 1
+			});
+			await this.page.setUserAgent(
+				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
+			);
 			await this.page?.goto(site);
 		} catch (e) {
+			if (this.page) {
+				await this.page.close();
+				this.page = undefined;
+			}
 			// console.log(e);
 		}
 	}
@@ -161,6 +165,8 @@ export default class ScraperController {
 			} catch (e) {
 				console.log(e);
 			}
+			await this.page.close();
+			this.page = undefined;
 		}
 		return { site, emails, contactsSection, title, keywords, description };
 	}
