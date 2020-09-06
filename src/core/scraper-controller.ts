@@ -29,13 +29,14 @@ export default class ScraperController {
 			await this.page.setUserAgent(
 				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
 			);
-			await this.page?.goto(site);
+			await this.page?.goto(site, { waitUntil: 'domcontentloaded' });
 		} catch (e) {
 			if (this.page) {
 				await this.page.close();
 				this.page = undefined;
 			}
 			// console.log(e);
+			throw e;
 		}
 	}
 
@@ -98,7 +99,7 @@ export default class ScraperController {
 				));
 				return { title, keywords, description };
 			} catch (e) {
-				console.log(e);
+				throw e;
 			}
 		}
 		return { title, keywords, description };
@@ -130,7 +131,7 @@ export default class ScraperController {
 				});
 				return contacts;
 			} catch (e) {
-				console.log(e);
+				throw e;
 			}
 		}
 	}
@@ -163,10 +164,13 @@ export default class ScraperController {
 					description
 				};
 			} catch (e) {
-				console.log(e);
+				throw e;
+			} finally {
+				await this.page?.close();
+				await this.browser?.close();
+				this.page = undefined;
+				this.browser = undefined;
 			}
-			await this.page.close();
-			this.page = undefined;
 		}
 		return { site, emails, contactsSection, title, keywords, description };
 	}
